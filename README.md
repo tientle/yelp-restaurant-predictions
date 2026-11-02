@@ -1,85 +1,101 @@
-# IDS-706-Assignment-2-Data-Analysis
+# Yelp Restaurant Predictions
 
-## Overview
+**Predicting restaurant ratings using machine learning and Yelp business attributes**
 
-[![Python tests](https://github.com/tientle/IDS-706-Assignment-2-Data-Analysis/actions/workflows/test.yml/badge.svg)](https://github.com/tientle/IDS-706-Assignment-2-Data-Analysis/actions/workflows/test.yml)
+[![Python tests](https://github.com/tientle/yelp-restaurant-predictions/actions/workflows/test.yml/badge.svg)](https://github.com/tientle/yelp-restaurant-predictions/actions/workflows/test.yml)
 
-Refactoring slogan: Refactor because the code deserves a glow-up :)
+## Project Overview
 
-This project explores data analysis, data engineering, and machine learning concepts using the Yelp Open Dataset.
+What characteristics are associated with higher restaurant ratings, and can we use these characteristics to predict how customers evaluate a restaurant?
 
-The original analysis explored three areas:
+Using the Yelp Open Dataset, I built a Random Forest regression model to predict restaurant star ratings based on business attributes such as outdoor seating, delivery options, alcohol offerings, and other amenities.
 
-1. The relationship between restaurant attributes and Yelp star ratings using a Random Forest regression model
-2. A performance comparison between Pandas and Polars
-3. Experimentation with Rust's ownership system
+Beyond prediction, I explored which attributes contributed most to model performance and how these findings might help restaurants better understand customer preferences and business performance.
 
-The project has been expanded to make the analysis more reproducible and reliable. The Python analysis workflow was refactored into reusable functions for data filtering, cleaning, preprocessing, and machine learning. Unit and integration tests were added using `pytest`, code quality is checked using Black and flake8, and a GitHub Actions continuous integration (CI) workflow automatically validates the project across multiple Python versions. The project is also containerized with Docker to provide a reproducible environment for running the test suite.
+The project also includes automated testing, continuous integration, and Docker containerization to support reproducibility.
 
-**_Note: The Yelp Open Dataset is not included in this repository due to its file size. Download the yelp_academic_dataset_business.json file here: https://business.yelp.com/data/resources/open-dataset/_**
+## Key Results
 
-## Analysis between restaurant attributes and Yelp star ratings
+- **1,263 restaurants** analyzed, each with at least 500 Yelp reviews.
+- **0.322 stars Mean Absolute Error (MAE)** using Random Forest regression.
+- **200 decision trees** trained using an 80/20 train-test split.
+- **10 restaurant attributes** identified as the most important predictors based on grouped feature importance.
 
-### Project Question/Goal
+## Business Question
 
-**What restaurant characteristics are associated with higher Yelp star ratings?**
+Restaurant ratings influence how customers discover and evaluate businesses. Understanding the characteristics associated with ratings can provide useful insights into customer preferences and restaurant positioning.
 
-Yelp ratings can have real-world implications for both restaurants and customers. Customers often use ratings to decide where to eat, while restaurant owners can use customer feedback and data to better understand how their business is perceived.
+This project investigates:
 
-I wanted to explore whether characteristics that restaurants can control or offer, such as outdoor seating, delivery, alcohol offerings, bike parking, and other amenities, are associated with differences in Yelp star ratings.
+1. Can restaurant star ratings be predicted using business attributes?
+2. Which restaurant characteristics contribute most to predictive performance?
+3. What patterns might help restaurant owners better understand how their businesses are perceived?
 
-I trained a Random Forest regression model to explore which restaurant attributes/characteristics were most useful for predicting ratings. These characteristics don't necessarily cause higher ratings, but help to identify patterns that could provide insight into the characteristics associated with customer ratings.
+**Important distinction:** Predictive relationships do not necessarily imply causation. An attribute being useful for predicting ratings does not mean adding that attribute will increase a restaurant's rating.
 
-### Data
+## Dataset
 
-The analysis uses business data from Yelp Open Dataset. The data contains many types of business, including beauty salons and dentists, so I filtered the data to:
+**Source:** [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/)
 
-- Businesses with `"Restaurants"` in their Yelp categories
-- Businesses with at least 500 reviews
+The Yelp business dataset contains business information, including categories, ratings, review counts, and available amenities.
 
-This led me to have 1,263 restaurants to work with.
+I filtered the dataset to include:
 
-### Data Cleaning
+- Businesses categorized as restaurants.
+- Restaurants with at least 500 reviews.
 
-The 'attributes' column contains restaurant characteristics stored in a dictionary-like structure.
+The resulting dataset contained **1,263 restaurants**.
 
-To clean and prepare the data, I:
+The model uses restaurant-level business attributes rather than individual review text.
 
-1. Expanded attributes into individual columns
-2. Cleaned inconsistent string representations
-3. Calculated the coverage of each attribute to understand how much data was available for each characteristic
-4. Examined attributes with at least 75% coverage
-5. Focused the analysis on simple attributes rather than nested dictionary attributes
-6. Converted 'RestaurantsPriceRange2' to a numeric variable
+## Methodology
 
-Missing values were kept where appropriate because the absence of a characteristic in Yelp's data doesn't necessarily mean that the restaurant doesn't have that characteristic.
+### 1. Data Cleaning and Preparation
 
-As part of making the analysis more reproducible, the filtering and cleaning steps were refactored into reusable functions. These functions are also tested independently in the project's test suite.
+Restaurant attributes were stored in dictionary-like structures that required preprocessing before modeling.
 
-### Machine Learning
+I:
 
-I used a Random Forest regression model to predict Yelp star ratings using restaurant attributes.
+- Expanded restaurant attributes into individual columns.
+- Standardized inconsistent string representations.
+- Examined attribute coverage and identified attributes with at least 75% coverage.
+- Excluded nested dictionary attributes from the modeling analysis.
+- Converted restaurant price range into a numeric variable.
+- Preserved missing values where appropriate rather than assuming that missing information indicated the absence of an amenity.
 
-Target variable: 'stars'
-Predictors: cleaned list of restaurant attributes
+### 2. Predictive Modeling
 
-Categorical attributes were converted into numeric features using one-hot encoding. 'RestaurantsPriceRange2' was converted to numeric values and passed through without one-hot encoding.
+I trained a **Random Forest regression model** to predict Yelp star ratings.
 
-The dataset was split into 80% training data and 20% testing data.
+| Component         | Approach                   |
+| ----------------- | -------------------------- |
+| Target variable   | Yelp star rating (`stars`) |
+| Predictors        | Restaurant attributes      |
+| Model             | Random Forest Regressor    |
+| Trees             | 200                        |
+| Training split    | 80%                        |
+| Testing split     | 20%                        |
+| Evaluation metric | Mean Absolute Error (MAE)  |
 
-The Random Forest model used 200 decision trees.
+Categorical attributes were transformed using one-hot encoding, while restaurant price range was treated as a numeric feature.
 
-The model received a Mean Absolute Error (MAE) of 0.322 stars, meaning that the model's predicted rating differed from the actual Yelp rating by 0.32 stars on average.
+### 3. Model Evaluation
 
-To identify the restaurant characteristics most useful for predicting Yelp ratings, I used Random Forest feature importance.
+The model achieved a **Mean Absolute Error of 0.322 stars**.
 
-One-hot encoding creates multiple model features from a single restaurant attribute, so I grouped the importance scores of the encoded features back into their original attribute and summed their feature importance scores.
+This means its predictions differed from actual Yelp ratings by approximately 0.32 stars on average on the test set.
+
+### 4. Feature Importance
+
+To understand which restaurant characteristics were most useful for prediction, I examined Random Forest feature importance.
+
+Because one-hot encoding creates multiple features from a single original attribute, I aggregated the encoded feature importance scores back to their original restaurant attributes.
 
 ![Feature Importance](images/encoding.png)
 
-![Grouped Feature Importance, and Summed](images/encoding_grouped_sum.png)
+![Grouped Feature Importance](images/encoding_grouped_sum.png)
 
-The highest-ranked attributes:
+The ten highest-ranked attributes were:
 
 1. Alcohol
 2. Outdoor Seating
@@ -92,179 +108,139 @@ The highest-ranked attributes:
 9. Wheelchair Accessibility
 10. Restaurant Table Service
 
-Using the top 10 combined feature importance scores, I calculated the mean star rating and restaurant count for each attribute.
+![Grouped Attribute Importance](images/grouped_encoding.png)
 
-![Grouped Feature Importance](images/grouped_encoding.png)
+## Findings and Interpretation
 
-### Interpretation
-
-For attributes that Random Forest considered important, the differences in average ratings were generally small.
-
-Feature importance represents how useful a variable is for prediction, but does not indicate whether an attribute would cause a rating to increase or decrease. Differences in average ratings represent associations rather than causal relationships.
+Although several restaurant attributes were important for prediction, differences in average ratings across attribute categories were generally small.
 
 ![Average Yelp Rating by Alcohol Offering](images/alcohol_ratings.png)
 
 ![Average Yelp Rating by Outdoor Seating Offering](images/outdoor_ratings.png)
 
-## Performance between Pandas and Polars
+Feature importance indicates how useful an attribute is to the model, but it does not establish whether the attribute increases or decreases ratings.
 
-I compared performance between Pandas and Polars by 1. filtering data and 2. grouping data and calculating summary statistics. The differences in each were small, but performance depends on many factors such as dataset size and system environments.
+These results highlight the distinction between identifying predictive patterns and making causal business recommendations.
 
-Pandas filtering time: 0.020480 seconds <br>
-Polars filtering time: 0.019030 seconds
+### Business Applications
 
-Pandas grouping and summary statistics time: 0.016093 seconds <br>
-Polars grouping and summary statistics time: 0.016181 seconds
+The analysis demonstrates how machine learning can help identify patterns in customer-facing business characteristics.
 
-## Experimentation with Rust's ownership system
+Potential applications include:
 
-I modified a Rust Jupyter notebook to demonstrate Rust's ownership system. I created a vector of colors. I assigned the vector to another variable to transfer ownership. After this, the original vector can no longer be used.
+- Understanding which restaurant attributes are most informative when analyzing ratings.
+- Exploring differences in customer perceptions across restaurant characteristics.
+- Supporting further investigation into restaurant positioning and customer experience.
 
-![Rust Ownership Error](images/rust_error.png)
-
-![Rust Ownership Success](images/rust.png)
+These are potential applications rather than demonstrated improvements in restaurant performance.
 
 ## Reproducing the Analysis
 
-To reproduce this analysis locally:
-
-1. Clone this repository and navigate into the project directory.
-
-2. Create a virtual environment:
-
-   ```bash
-   python3 -m venv .venv
-   ```
-
-3. Activate the virtual environment:
-
-   ```bash
-   source .venv/bin/activate
-   ```
-
-4. Install the required dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Download the [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/).
-
-   **The Yelp Open Dataset is not included in this repository due to its file size.**
-
-   Download and unpack the dataset, then place `yelp_academic_dataset_business.json` inside the project's `data/` directory:
-
-   ```text
-   data/
-   └── yelp_academic_dataset_business.json
-   ```
-
-6. Run the analysis:
-
-   ```bash
-   python yelp_data.py
-   ```
-
-   The script runs the full analysis workflow, including filtering the Yelp data to restaurants with at least 500 reviews, cleaning and preprocessing restaurant attributes, training the Random Forest regression model, evaluating its predictions, calculating feature importance, and generating the project visualizations.
-
-### Reproducing the Test Environment with Docker
-
-Docker can be used to reproduce the environment required to run the automated test suite without creating a local Python virtual environment:
+### 1. Clone the repository
 
 ```bash
-docker build -t yelp-analysis .
-docker run --rm yelp-analysis
+git clone https://github.com/tientle/yelp-restaurant-predictions.git
+cd yelp-restaurant-predictions
 ```
 
-## Testing
+### 2. Create and activate a virtual environment
 
-To improve the reliability of the original analysis, I refactored key parts of the workflow into reusable functions and created a test suite using `pytest`.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
-Run all tests from the root of the repository with:
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Download the dataset
+
+Download the [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/) and place `yelp_academic_dataset_business.json` in the `data/` directory.
+
+```text
+data/
+└── yelp_academic_dataset_business.json
+```
+
+The dataset is not included in this repository due to its size.
+
+### 5. Run the analysis
+
+```bash
+python yelp_data.py
+```
+
+The script performs data filtering, cleaning, feature preprocessing, model training, evaluation, feature importance analysis, and visualization generation.
+
+## Testing and Reproducibility
+
+To improve reliability, I refactored the original analysis into reusable functions and developed automated tests using `pytest`.
+
+The seven tests cover restaurant filtering, attribute cleaning, preprocessing, feature importance calculations, and the end-to-end modeling workflow.
+
+Run the tests using:
 
 ```bash
 python -m pytest testing/test_yelp_data.py -v
 ```
 
-The current test suite contains seven tests covering:
+![Passing Tests](images/passed-tests.png)
 
-- Restaurant filtering
-- String and business attribute cleaning
-- Removal of nested attributes
-- Feature preprocessing and encoding
-- Feature importance calculations
-- The end-to-end workflow from data processing through model training, prediction, and evaluation
+### Continuous Integration
 
-All seven tests currently pass successfully:
+GitHub Actions automatically validates the project on pushes, pull requests, and scheduled runs.
 
-![Pytest results showing 7 passing tests](images/passed-tests.png)
+The workflow includes:
 
-## Continuous Integration
+- Python 3.12 and 3.13 compatibility testing.
+- Black formatting checks.
+- flake8 code-quality checks.
+- Seven automated pytest tests.
+- Docker image builds and containerized testing.
 
-GitHub Actions automatically validates the project whenever changes are pushed to the repository or submitted through a pull request. The workflow can also be run manually from the **Actions** tab and is scheduled to run weekly.
+![GitHub Actions Workflow](images/testing.png)
 
-The CI workflow includes:
+### Docker
 
-- Testing across Python 3.12 and 3.13 using a matrix strategy
-- Code formatting validation with Black
-- Code quality checks with flake8
-- The full seven-test `pytest` suite
-- Building the Docker image
-- Running the test suite inside the Docker container
-
-### Python Version Matrix
-
-The workflow uses a matrix strategy to run the test suite independently with Python 3.12 and Python 3.13.
-
-Testing multiple Python versions helps identify compatibility issues that may not appear in a single development environment.
-
-![Matrix strategy](images/matrix_strategy.png)
-
-### Successful CI Workflow
-
-The workflow successfully runs the full validation pipeline across Python 3.12 and 3.13, including formatting, linting, automated tests, and Docker validation.
-
-![Successful GitHub Actions workflow](images/testing.png)
-
-## Code Quality and Refactoring
-
-The original analysis was refactored to separate key data-processing and machine-learning operations into reusable functions. This made individual parts of the workflow easier to test and reduced the amount of analysis logic contained directly in the main script.
-
-Refactored functionality includes:
-
-- Filtering businesses by category and review count
-- Cleaning Yelp attribute strings and missing values
-- Removing nested attributes
-- Preprocessing categorical and numeric features
-- Mapping encoded features back to their original restaurant attributes
-- Aggregating feature importance scores
-
-Black is used to maintain consistent Python formatting, while flake8 checks the source code and tests for style and code-quality issues. Both checks are also included in the GitHub Actions workflow.
-
-### Refactoring Example
-
-The following commit diff shows the preprocessing logic being refactored into a reusable `preprocess_features()` function. Previously, feature preprocessing was performed directly in the main analysis workflow. The refactored version separates this logic into its own function and replaces the original preprocessing code with a function call, making it easier to test and reuse.
-
-![Refactoring commit diff](images/refactoring-diff.png)
-
-## Docker
-
-The project is containerized with Docker to provide a reproducible Python environment for running the test suite. Through this process, I learned how Docker packages the project's dependencies and test commands into a reproducible environment so the same test suite can run consistently outside my local Python environment.
-
-Build the Docker image from the root of the repository:
+Build and run the containerized test environment:
 
 ```bash
 docker build -t yelp-analysis .
-```
-
-Run the container:
-
-```bash
 docker run --rm yelp-analysis
 ```
 
-The container automatically runs the project's `pytest` suite. A successful run should complete all seven tests.
+![Docker Tests](images/docker-tests.png)
 
-<img src="images/docker-build.png" alt="Successful Docker build" width="700">
+## Additional Technical Explorations
 
-<img src="images/docker-tests.png" alt="Successful Docker test run" width="700">
+### Pandas vs. Polars
+
+I compared the performance of Pandas and Polars on filtering and aggregation operations.
+
+| Operation                       |     Pandas |     Polars |
+| ------------------------------- | ---------: | ---------: |
+| Filtering                       | 0.020480 s | 0.019030 s |
+| Grouping and summary statistics | 0.016093 s | 0.016181 s |
+
+The performance differences were small for the tested operations. Results may vary with dataset size, hardware, and execution environment.
+
+### Rust Ownership
+
+I also explored Rust's ownership system through a Jupyter notebook demonstrating how assigning a vector to another variable transfers ownership.
+
+![Rust Ownership Error](images/rust_error.png)
+
+![Rust Ownership Success](images/rust.png)
+
+## Tools and Technologies
+
+**Data Science:** Python, pandas, Polars, scikit-learn, NumPy
+
+**Machine Learning:** Random Forest Regression, One-Hot Encoding, Feature Importance, Model Evaluation
+
+**Engineering:** pytest, GitHub Actions, Docker, Black, flake8
+
+**Additional Exploration:** Rust
