@@ -580,3 +580,25 @@ with explore_tab:
         )
     else:
         show_explore_dashboard()
+
+
+
+# --------------------------------------------------
+# Footer
+# --------------------------------------------------
+
+st.markdown(
+    """
+    <div class="app-footer">
+        <span>Made by: Tien Le 🍅</span>
+        <a
+            href="https://github.com/tientle/yelp-restaurant-predictions"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            View on GitHub ↗
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
