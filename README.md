@@ -14,6 +14,14 @@ Beyond prediction, I explored which attributes contributed most to model perform
 
 The project also includes automated testing, continuous integration, and Docker containerization to support reproducibility.
 
+# Yelp Restaurant Predictions
+
+Build your dream restaurant and predict its Yelp rating using a Random Forest machine learning model trained on 1,263 restaurants.
+
+**[Try the interactive app](https://build-your-restaurant.streamlit.app/)**
+
+The app lets you customize restaurant characteristics, explore how they affect model predictions, and discover patterns in real Yelp ratings
+
 ## Key Results
 
 - **1,263 restaurants** analyzed, each with at least 500 Yelp reviews.
