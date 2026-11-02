@@ -6,3 +6,10 @@ polars==1.44.2
 pytest==9.1.1
 black
 flake8
+
+streamlit
+pandas
+numpy
+scikit-learn==1.9.1
+joblib
+plotly
